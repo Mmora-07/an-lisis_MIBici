@@ -10,7 +10,6 @@ st.set_page_config(layout="wide")
 # -----------------------
 modelo_dia = joblib.load("modelo_dia.pkl")
 
-df = pd.read_csv("dataset_limpio.csv")
 estaciones_dict = joblib.load("estaciones_dict.pkl")
 
 # Obtener estaciones entrenadas
