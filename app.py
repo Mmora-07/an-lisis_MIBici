@@ -5,7 +5,7 @@ import json
 
 modelo_dia = joblib.load("modelo_dia.pkl")
 
-with open("data/estaciones_dict.json", "r", encoding="utf-8") as f:
+with open("estaciones_dict.json", "r", encoding="utf-8") as f:
     estaciones_dict = json.load(f)
 
 estaciones_dict = {int(k): v for k, v in estaciones_dict.items()}
