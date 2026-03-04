@@ -1,7 +1,14 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import matplotlib.pyplot as plt
+import json
+
+modelo_dia = joblib.load("modelo_dia.pkl")
+
+with open("data/estaciones_dict.json", "r", encoding="utf-8") as f:
+    estaciones_dict = json.load(f)
+
+estaciones_dict = {int(k): v for k, v in estaciones_dict.items()}
 
 st.set_page_config(layout="wide")
 
@@ -9,8 +16,6 @@ st.set_page_config(layout="wide")
 # Cargar modelo y datos
 # -----------------------
 modelo_dia = joblib.load("modelo_dia.pkl")
-
-estaciones_dict = joblib.load("estaciones_dict.pkl")
 
 # Obtener estaciones entrenadas
 estaciones_validas = list(modelo_dia.feature_name_)
