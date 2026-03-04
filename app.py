@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 import json
-
+import matplotlib.pyplot as plt
 modelo_dia = joblib.load("modelo_dia.pkl")
 
 with open("estaciones_dict.json", "r", encoding="utf-8") as f:
