@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 # ==========================================
 # CONFIGURACIÓN
 # ==========================================
+
 st.set_page_config(
     page_title="Predicción Demanda MiBici",
     page_icon="🚲",
@@ -14,11 +15,12 @@ st.set_page_config(
 )
 
 st.title("🚲 Predicción Inteligente de Demanda")
-st.markdown("Simulación de cantidad de viajes por estación")
+st.markdown("Estimación de viajes por estación durante el día")
 
 # ==========================================
 # CARGAR RECURSOS
 # ==========================================
+
 @st.cache_resource
 def cargar_recursos():
 
@@ -44,6 +46,7 @@ df_estaciones["id"] = df_estaciones.index
 # ==========================================
 # SELECCIÓN ESTACIÓN
 # ==========================================
+
 st.subheader("Selecciona la estación")
 
 modo_busqueda = st.radio(
@@ -55,9 +58,13 @@ modo_busqueda = st.radio(
 if modo_busqueda == "ID":
 
     estacion_id = st.number_input("ID Estación", min_value=0, step=1)
+
     nombre_estacion = estaciones_dict.get(estacion_id, {}).get("name", "No encontrada")
 
-    st.info(f"Nombre estación: {nombre_estacion}")
+    if nombre_estacion != "No encontrada":
+        st.success(f"📍 {nombre_estacion}")
+    else:
+        st.warning("Estación no encontrada")
 
 else:
 
@@ -70,7 +77,7 @@ else:
         df_estaciones[df_estaciones["name"] == nombre_seleccionado]["id"].values[0]
     )
 
-    st.info(f"ID estación: {estacion_id}")
+    st.success(f"ID estación: {estacion_id}")
 
 # validar estación
 if estacion_id not in estaciones_validas:
@@ -80,6 +87,7 @@ if estacion_id not in estaciones_validas:
 # ==========================================
 # SELECCIÓN DÍA
 # ==========================================
+
 dias_dict = {
     0: "Lunes",
     1: "Martes",
@@ -99,6 +107,7 @@ dia_semana = st.selectbox(
 # ==========================================
 # PREDICCIÓN
 # ==========================================
+
 if st.button("🔮 Generar Predicción"):
 
     horas = list(range(24))
@@ -106,7 +115,7 @@ if st.button("🔮 Generar Predicción"):
 
     for h in horas:
 
-        # sistema no opera 1–4
+        # sistema no opera entre 1 y 4
         if h in [1,2,3,4]:
             pred_24h.append(0)
             continue
@@ -130,26 +139,55 @@ if st.button("🔮 Generar Predicción"):
         pred_24h.append(pred)
 
     # ======================================
-    # DEMANDA TOTAL DEL DÍA
+    # RESULTADOS
     # ======================================
+
     pred_dia = sum(pred_24h)
 
-    st.success(f"📅 Demanda estimada del día: {round(pred_dia,2)} viajes")
+    st.metric(
+        label="🚲 Viajes estimados en el día",
+        value=f"{round(pred_dia,2)}"
+    )
+
+    # dataframe para gráfico
+    df_pred = pd.DataFrame({
+        "Hora": horas,
+        "Viajes_estimados": pred_24h
+    })
 
     # ======================================
     # GRÁFICO
     # ======================================
+
     st.subheader("📊 Demanda estimada por hora")
 
     fig, ax = plt.subplots(figsize=(10,5))
 
-    ax.plot(horas, pred_24h, marker="o")
+    ax.plot(
+        df_pred["Hora"],
+        df_pred["Viajes_estimados"],
+        marker="o",
+        linewidth=2
+    )
+
+    ax.fill_between(
+        df_pred["Hora"],
+        df_pred["Viajes_estimados"],
+        alpha=0.2
+    )
 
     ax.set_xlabel("Hora del día")
     ax.set_ylabel("Cantidad estimada de viajes")
-    ax.set_title("Curva de demanda horaria estimada")
+    ax.set_title("Curva de demanda diaria")
 
     ax.set_xticks(range(24))
-    ax.grid(True)
+    ax.grid(True, linestyle="--", alpha=0.5)
 
     st.pyplot(fig)
+
+    # ======================================
+    # TABLA
+    # ======================================
+
+    st.subheader("Detalle por hora")
+    st.dataframe(df_pred, use_container_width=True)
